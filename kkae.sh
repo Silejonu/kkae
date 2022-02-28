@@ -17,9 +17,8 @@ fi
 
 # Make sure all dependencies are met
 for dependency in tr fold sort head cat ${clipboard_manager} ; do
-  which ${dependency} &> /dev/null
-  if [[ ${?} -ne 0 ]] ; then
-    printf "Missing dependency: ${dependency}.\n" >&2
+  if ! which ${dependency} &> /dev/null ; then
+    printf "Missing dependency: %s.\n" "${dependency}" >&2
     exit 1
   fi
 done
@@ -69,7 +68,7 @@ while getopts l:c:ase:mdpwbvh option ; do
        [[ ${password_length} -lt 0 ]] ||\
        [[ ${password_length} -gt ${maximum_password_length} ]]
        then
-         printf "Option -l requires a number between 0 and ${maximum_password_length}.\n" >&2
+         printf "Option -l requires a number between 0 and %s.\n" "${maximum_password_length}">&2
          printf "Edit /etc/kkae.conf to change the maximum password length.\n" >&2
          exit 1
        fi ;;
@@ -100,7 +99,7 @@ while getopts l:c:ase:mdpwbvh option ; do
     p) print_password='true' ;;
     w) which_characters='true' ;;
     b) debug='true' ;;
-    v) printf "${kkae_version}\n" && exit 0 ;;
+    v) printf "%s\n" "${kkae_version}" && exit 0 ;;
     h) usage && exit 0 ;;
     *) usage && exit 1 ;;
   esac
@@ -119,11 +118,11 @@ fi
 debug_message "Display server detected: ${XDG_SESSION_TYPE}"
 
 # Valid characters
-valid_characters=$(tr -dc ${tr_character_set} < /dev/urandom |\
+valid_characters=$(tr -dc "${tr_character_set}" < /dev/urandom |\
 tr -d "${excluded_characters}${similar_characters}${excluded_letters}" |\
 head -c 10000 | fold -w1 | sort -u | tr -d '\n')
 debug_message "Valid characters: ${valid_characters}"
-valid_special_characters=$(echo "${valid_characters}" | tr -d [:alnum:] |\
+valid_special_characters=$(echo "${valid_characters}" | tr -d '[:alnum:]' |\
 head -c 10000 | fold -w1 | sort -u | tr -d '\n')
 debug_message "Valid special characters: ${valid_special_characters}"
 
@@ -135,9 +134,9 @@ fi
 
 # Create the password generation function
 generate_password () {
-  password=$(tr -dc ${tr_character_set} < /dev/urandom |\
+  password=$(tr -dc "${tr_character_set}" < /dev/urandom |\
   tr -d "${excluded_characters}${similar_characters}${excluded_letters}" |\
-  head -c ${password_length})
+  head -c "${password_length}")
 }
 
 debug_message "Preparing to generate the password…"
@@ -146,7 +145,7 @@ password_diversity_target='1'
 # Generate passwords until at least one character of each selected category is found in a single password
 while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
   timeout () {
-    printf "Could not generate a valid password after ${countdown}s.\n" >&2
+    printf "Could not generate a valid password after %ss.\n" "${countdown}" >&2
     printf "Try again, or review your parameters.\n" >&2
     printf "Edit /etc/kkae.conf to increase the timeout.\n" >&2
     if [[ ${do_not_notify} == 'false' ]] ; then
