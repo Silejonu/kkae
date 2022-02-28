@@ -44,4 +44,6 @@ It will prompt for any missing dependency when ran from the command-line.
 
 `# cp kkae/kkae /usr/local/bin/`
 
+`# chmod 755 /usr/local/bin/kkae`
+
 `# cp kkae/kkae.conf /etc/`
