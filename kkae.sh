@@ -1,7 +1,6 @@
 #!/usr/bin/bash
 kkae_version='v1.0'
 
-# Debugging function
 debug_message () {
 if [[ ${debug} == 'true' ]] ; then
   echo "${@}"
@@ -23,7 +22,6 @@ for dependency in tr fold sort head cat ${clipboard_manager} ; do
   fi
 done
 
-# Declare the usage function
 usage() {
 cat << EOF
 usage: ${0} [-asmdpwbvh] [-l LENGTH] [-c CASE] [-e LIST]
@@ -43,7 +41,6 @@ Generate a random password and save it into the clipboard.
 EOF
 }
 
-# Declare the global variables
 password_length='16'
 maximum_password_length='256'
 password_case='both' # valid values: lowercase, uppercase, both
@@ -59,7 +56,7 @@ if [[ -f /etc/kkae.conf ]] ; then
   source /etc/kkae.conf
 fi
 
-# Parse the options
+# Parse the command-line options
 while getopts l:c:ase:mdpwbvh option ; do
   case ${option} in
     l) password_length=${OPTARG}
@@ -117,7 +114,6 @@ fi
 
 debug_message "Display server detected: ${XDG_SESSION_TYPE}"
 
-# Valid characters
 valid_characters=$(tr -dc "${tr_character_set}" < /dev/urandom |\
 tr -d "${excluded_characters}${similar_characters}${excluded_letters}" |\
 head -c 10000 | fold -w1 | sort -u | tr -d '\n')
@@ -126,13 +122,11 @@ valid_special_characters=$(echo "${valid_characters}" | tr -d '[:alnum:]' |\
 head -c 10000 | fold -w1 | sort -u | tr -d '\n')
 debug_message "Valid special characters: ${valid_special_characters}"
 
-# Print which characters are included with the current settings
 if [[ ${which_characters} = 'true' ]] ; then
   echo "${valid_characters}"
   exit 0
 fi
 
-# Create the password generation function
 generate_password () {
   password=$(tr -dc "${tr_character_set}" < /dev/urandom |\
   tr -d "${excluded_characters}${similar_characters}${excluded_letters}" |\
@@ -158,19 +152,16 @@ while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
   generate_password
   # Reset the password diversity target on each new pass
   password_diversity_target='0'
-  # Check if the password should contain at least one number
+  # Check if the password should contain at least one character of a given category
   if [[ "${valid_characters}" == *[0-9]* ]] ; then
     password_diversity_target=$(( ${password_diversity_target} + 1 ))
   fi
-  # Check if the password should contain at least one lowercase letter
   if [[ "${valid_characters}" == *[a-z]* ]] ; then
     password_diversity_target=$(( ${password_diversity_target} + 1 ))
   fi
-  # Check if the password should contain at least one uppercase letter
   if [[ "${valid_characters}" == *[A-Z]* ]] ; then
     password_diversity_target=$(( ${password_diversity_target} + 1 ))
   fi
-  # Check if the password should contain at least one special character
   if [[ "${#valid_special_characters}" -gt 0 ]] ; then
     password_diversity_target=$(( ${password_diversity_target} + 1 ))
   fi
@@ -181,19 +172,16 @@ while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
   record_diversity () {
   password_diversity=$(( ${password_diversity} + 1 ))
   }
-  # Check if the password contains at least one number
+  # Check if the password contains at least one number of a given category
   if [[ "${password}" == *[0-9]* ]] ; then
     record_diversity
   fi
-  # Check if the password contains at least one lowercase letter
   if [[ "${password}" == *[a-z]* ]] ; then
     record_diversity
   fi
-  # Check if the password contains at least one uppercase letter
   if [[ "${password}" == *[A-Z]* ]] ; then
     record_diversity
   fi
-  # Check if the password contains at least one special character
   special_characters_in_password=$(echo "${password}" | tr -d '[a-zA-Z0-9]\n')
   if [[ "${#special_characters_in_password}" -gt 0 ]] ; then
     record_diversity
@@ -201,7 +189,6 @@ while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
 done
 debug_message "Password generated: ${password}"
 
-# Print the password and exit if asked to
 if [[ ${print_password} = 'true' ]] ; then
   echo "${password}"
   debug_message "Printing password:"
@@ -232,7 +219,6 @@ case ${XDG_SESSION_TYPE} in
             debug_message "Password copied into the Windows clipboard." ;;
 esac
 
-# Notify (or not) that a new password has been saved into the clipboard
 if [[ ${do_not_notify} == 'true' ]] ; then
   debug_message "Do not send a notification."
   exit 0
