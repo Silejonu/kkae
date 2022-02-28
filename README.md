@@ -7,6 +7,14 @@ Written in Bash, works on Linux (Wayland/X11), macOS, as well as on Windows via 
 
 I do not own a macOS machine, so feel free to let me know how it truly works.
 
+## Features
+
+* Send passwords directly to the clipboard (or print them into the terminal)
+* Sane defaults, but you don't have to like them:
+* Edit `/etc/kkae.conf` to save your favourite settings…
+* … or use the command-line to select the options you need in the moment
+* Easily switch between lists of excluded characters with `kkae -e /path/to/list`
+
 ## Usage
 ```
 kkae [-asmdpwbvh] [-l LENGTH] [-c CASE] [-e LIST]
