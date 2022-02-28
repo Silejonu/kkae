@@ -45,11 +45,11 @@ git clone https://github.com/Silejonu/kkae
 # chmod 755 /usr/local/bin/kkae
 ```
 
-### For a default config file:
+### Example config file:
 
 `# cp kkae/kkae.conf /etc/`
 
-### Get a clickable button/application
+### Clickable button/application
 
 #### On Linux:
 
