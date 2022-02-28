@@ -72,3 +72,6 @@ and save it wherever you like.
 
 Go into `%AppData%\Microsoft\Windows\Start Menu\Programs` and right-click -> New -> Shortcut.
 
+Location: `cmd.exe /c "\path\to\kkae.bat`
+
+Name: `kkae`
