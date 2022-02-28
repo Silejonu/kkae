@@ -39,11 +39,36 @@ kkae also uses common program that are extremely unlikely to not already be inst
 It will prompt for any missing dependency when ran from the command-line.
 
 ## Installation instructions
+```
+git clone https://github.com/Silejonu/kkae
+# cp kkae/kkae /usr/local/bin/
+# chmod 755 /usr/local/bin/kkae
+```
 
-`git clone https://github.com/Silejonu/kkae`
-
-`# cp kkae/kkae /usr/local/bin/`
-
-`# chmod 755 /usr/local/bin/kkae`
+### For a default config file:
 
 `# cp kkae/kkae.conf /etc/`
+
+### Get a clickable button/application
+
+#### On Linux:
+
+`# cp kkae.desktop /usr/share/applications/`
+
+#### On macOS:
+
+Users should be able to create a button/Spotlight shortcut [this way](https://stackoverflow.com/a/66845958).
+
+#### On WSL:
+
+Create a script named `kkae.bat` with the following content:
+```
+@echo off
+title kkae
+wsl.exe kkae
+exit
+```
+and save it wherever you like.
+
+Go into `%AppData%\Microsoft\Windows\Start Menu\Programs` and right-click -> New -> Shortcut.
+
