@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=kkae
+Comment=A powerful password generator that saves directly into the clipboard, with lots of options.
+Exec=/usr/local/bin/kkae
+Icon=dialog-password-symbolic.svg
+Terminal=false
