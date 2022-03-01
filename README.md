@@ -42,7 +42,7 @@ At least one of those two programs must be installed on Linux:
 * for Wayland: `wl-clipboard`
 * for X11: `xclip`
 
-kkae also uses common program that are extremely unlikely to not already be installed: `tr`, `sort`, `head`, and `cat`.
+`kkae` also uses common program that are extremely unlikely to not already be installed: `tr`, `sort`, `head`, and `cat`.
 
 It will prompt for any missing dependency when ran from the command-line.
 
@@ -54,21 +54,21 @@ git clone https://github.com/Silejonu/kkae
 # chmod 755 /usr/local/bin/kkae
 ```
 
-### Example config file:
+### Example config file
 
 `# cp kkae/kkae.conf /etc/`
 
 ### Clickable button/application
 
-#### On Linux:
+#### On Linux
 
 `# cp kkae.desktop /usr/share/applications/`
 
-#### On macOS:
+#### On macOS
 
 Users should be able to create a button/Spotlight shortcut [this way](https://stackoverflow.com/a/66845958).
 
-#### On WSL:
+#### On WSL
 
 Create a script named `kkae.bat` with the following content:
 ```
