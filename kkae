@@ -213,6 +213,8 @@ case ${XDG_SESSION_TYPE} in
             printf "%s" "${password}" | xclip -selection ${selection}
             debug_message "Password copied into the X11 clipboard." ;;
   *)        if [[ $(uname) == 'Darwin' ]] ; then
+              platform='macos'
+              debug_message "System detected: macOS"
               if [[ ${middle_click_clipboard} = 'true' ]] ; then
                 printf "Error: middle-click clipboard not available in macOS.\n" >&2
                 exit 1
@@ -220,6 +222,8 @@ case ${XDG_SESSION_TYPE} in
               printf "%s" "${password}" | pbcopy
               debug_message "Password copied into the macOS clipboard."
             else
+              platform='windows'
+              debug_message "System detected: Windows Subsystem for Linux"
               if [[ ${middle_click_clipboard} = 'true' ]] ; then
                 printf "Error: middle-click clipboard not available in WSL.\n" >&2
                 exit 1
@@ -233,8 +237,16 @@ if [[ ${do_not_notify} == 'true' ]] ; then
   debug_message "Do not send a notification."
   exit 0
 else
-  notify-send -t 1000 -i dialog-password-symbolic kkae "New random password saved in the clipboard." 2> /dev/null ||\
-  osascript -e 'display notification "New random password saved in the clipboard." with title "kkae"' 2> /dev/null
-  debug_message "Notification sent. Exit code: ${?}"
+  if [[ ${platform} == 'macos' ]] ; then
+    osascript -e 'display notification "New random password saved in the clipboard." with title "kkae"'
+    debug_message "Notification sent. Exit code: ${?}"
+  elif [[ ${platform} == 'windows' ]] ; then
+    notify-send() { wsl-notify-send.exe --category $WSL_DISTRO_NAME "${@}"; }
+    notify-send -t 1000 kkae "New random password saved in the clipboard."
+    debug_message "Notification sent. Exit code: ${?}"
+  else
+    notify-send -t 1000 -i dialog-password-symbolic kkae "New random password saved in the clipboard."
+    debug_message "Notification sent. Exit code: ${?}"
+  fi
   exit 0
 fi
