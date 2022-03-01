@@ -46,7 +46,7 @@ At least one of those two programs must be installed on Linux:
 
 It will prompt for any missing dependency when ran from the command-line.
 
-To get notifications in WSL, you need to copy [wsl-notify-send.exe](https://github.com/stuartleeks/wsl-notify-send/releases) into your `$PATH`.
+To get notifications in Windows, you need to copy [wsl-notify-send.exe](https://github.com/stuartleeks/wsl-notify-send/releases) into your WSL `$PATH`.
 
 ## Installation instructions
 ### Main program
