@@ -47,6 +47,7 @@ kkae also uses common program that are extremely unlikely to not already be inst
 It will prompt for any missing dependency when ran from the command-line.
 
 ## Installation instructions
+### Main program
 ```
 git clone https://github.com/Silejonu/kkae
 # cp kkae/kkae /usr/local/bin/
