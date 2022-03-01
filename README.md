@@ -64,7 +64,7 @@ git clone https://github.com/Silejonu/kkae
 
 #### On Linux
 
-`# cp kkae.desktop /usr/share/applications/`
+`# cp kkae/kkae.desktop /usr/share/applications/`
 
 #### On macOS
 
