@@ -166,7 +166,7 @@ while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
   if [[ "${#valid_special_characters}" -gt 0 ]] ; then
     password_diversity_target=$(( ${password_diversity_target} + 1 ))
   fi
-  
+
   # Reset the password diversity on each new pass
   password_diversity='0'
   # Create a function to record the diversity of the generated password
@@ -242,7 +242,7 @@ else
     debug_message "Notification sent. Exit code: ${?}"
   elif [[ ${platform} == 'windows' ]] ; then
     notify-send() { wsl-notify-send.exe --category $WSL_DISTRO_NAME "${@}"; }
-    notify-send -t 1000 kkae "New random password saved in the clipboard."
+    notify-send --category kkae --appId kkae "New random password saved in the clipboard."
     debug_message "Notification sent. Exit code: ${?}"
   else
     notify-send -t 1000 -i dialog-password-symbolic kkae "New random password saved in the clipboard."
