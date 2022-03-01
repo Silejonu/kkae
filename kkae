@@ -233,8 +233,8 @@ if [[ ${do_not_notify} == 'true' ]] ; then
   debug_message "Do not send a notification."
   exit 0
 else
-  notify-send -t 1000 -i dialog-password-symbolic kkae "New random password saved in the clipboard." ||\
-  osascript -e 'display notification "New random password saved in the clipboard." with title "kkae"'
+  notify-send -t 1000 -i dialog-password-symbolic kkae "New random password saved in the clipboard." 2> /dev/null ||\
+  osascript -e 'display notification "New random password saved in the clipboard." with title "kkae"' 2> /dev/null
   debug_message "Notification sent. Exit code: ${?}"
   exit 0
 fi
