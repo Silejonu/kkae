@@ -40,9 +40,7 @@ At least one of those two programs must be installed on Linux:
 * for Wayland: `wl-clipboard`
 * for X11: `xclip`
 
-`kkae` also uses common program that are extremely unlikely to not already be installed: `tr`, `sort`, `head`, and `cat`.
-
-It will prompt for any missing dependency when ran from the command-line.
+`kkae` also uses some GNU coreutils. It will prompt for any missing dependency when ran from the command-line.
 
 To get notifications in Windows, you need to copy [wsl-notify-send.exe](https://github.com/stuartleeks/wsl-notify-send/releases) into your WSL `$PATH`.
 
