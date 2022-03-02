@@ -5,8 +5,6 @@ A powerful password generator that saves directly into the clipboard, with lots 
 
 Written in Bash, works on Linux (Wayland/X11), macOS, as well as on Windows via WSL (the passwords will be saved into the Windows clipboard).
 
-I do not own a macOS machine, so feel free to let me know how it truly works.
-
 ## Features
 
 * Send passwords directly to the clipboard (or print them into the terminal)
