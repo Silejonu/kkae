@@ -64,7 +64,19 @@ git clone https://github.com/Silejonu/kkae
 
 #### On macOS
 
-Users should be able to create a button/Spotlight shortcut [this way](https://stackoverflow.com/a/66845958).
+Open Script Editor, make sur AppleScript is selected in the dropdown menu in the top-left corner, and enter the following text:
+```
+do shell script "/usr/local/bin/kkae"
+```
+Then go to File -> Export…
+
+Export as: `kkae`
+
+Where: Applications
+
+File Format: Application
+
+Code Sign: Don't Code Sign
 
 #### On WSL
 
