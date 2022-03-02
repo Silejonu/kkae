@@ -9,8 +9,10 @@ fi
 
 # Determine the display server used
 if [[ "${XDG_SESSION_TYPE}" == "wayland" ]] ; then
+  os='linux'
   clipboard_manager='wl-copy'
 elif [[ "${XDG_SESSION_TYPE}" == "x11" ]] ; then
+  os='linux'
   clipboard_manager='xclip'
 fi
 
@@ -112,7 +114,17 @@ if [[ ${#} -gt 0 ]] ; then
   exit 1
 fi
 
-debug_message "Display server detected: ${XDG_SESSION_TYPE}"
+if [[ ${os} == 'linux' ]] ; then
+  debug_message "Display server detected: ${XDG_SESSION_TYPE}"
+elif [[ $(uname) == 'Darwin' ]] ; then
+  os='macos'
+  debug_message "System detected: macOS"
+else
+  os='windows'
+  debug_message "System detected: Windows Subsystem for Linux"
+  # Add support for notifications via wsl-notify-send
+  notify-send() { wsl-notify-send.exe --category $WSL_DISTRO_NAME "${@}"; }
+fi
 
 valid_characters=$(tr -dc "${tr_character_set}" < /dev/urandom |\
 tr -d "${excluded_characters}${similar_characters}${excluded_letters}" |\
@@ -143,8 +155,14 @@ while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
     printf "Try again, or review your parameters.\n" >&2
     printf "Edit /etc/kkae.conf to increase the timeout.\n" >&2
     if [[ ${do_not_notify} == 'false' ]] ; then
-      notify-send -t 1000 -i dialog-password-symbolic kkae "Could not generate a valid password in time." ||\
-      osascript -e 'display notification "Could not generate a password in time" with title "kkae"'
+      if [[ ${os} == 'linux' ]] ; then
+        notify-send -t 1000 -i dialog-password-symbolic kkae "Could not generate a valid password in time."
+      elif [[ ${os} == 'macos' ]] ; then
+        osascript -e 'display notification "Could not generate a valid password in time." with title "kkae"'
+      elif [[ ${os} == 'windows' ]] ; then
+        notify-send --category kkae --appId kkae "Could not generate a valid password in time."   
+      fi
+      debug_message "Notification sent. Exit code: ${?}"
     fi
     exit 2
   }
@@ -212,18 +230,14 @@ case ${XDG_SESSION_TYPE} in
             fi
             printf "%s" "${password}" | xclip -selection ${selection}
             debug_message "Password copied into the X11 clipboard." ;;
-  *)        if [[ $(uname) == 'Darwin' ]] ; then
-              platform='macos'
-              debug_message "System detected: macOS"
+  *)        if [[ ${os} == 'macos' ]] ; then
               if [[ ${middle_click_clipboard} = 'true' ]] ; then
                 printf "Error: middle-click clipboard not available in macOS.\n" >&2
                 exit 1
               fi
               printf "%s" "${password}" | pbcopy
               debug_message "Password copied into the macOS clipboard."
-            else
-              platform='windows'
-              debug_message "System detected: Windows Subsystem for Linux"
+            elif [[ ${os} == 'windows' ]] ; then
               if [[ ${middle_click_clipboard} = 'true' ]] ; then
                 printf "Error: middle-click clipboard not available in WSL.\n" >&2
                 exit 1
@@ -237,16 +251,13 @@ if [[ ${do_not_notify} == 'true' ]] ; then
   debug_message "Do not send a notification."
   exit 0
 else
-  if [[ ${platform} == 'macos' ]] ; then
-    osascript -e 'display notification "New random password saved in the clipboard." with title "kkae"'
-    debug_message "Notification sent. Exit code: ${?}"
-  elif [[ ${platform} == 'windows' ]] ; then
-    notify-send() { wsl-notify-send.exe --category $WSL_DISTRO_NAME "${@}"; }
-    notify-send --category kkae --appId kkae "New random password saved in the clipboard."
-    debug_message "Notification sent. Exit code: ${?}"
-  else
+  if [[ ${os} == 'linux' ]] ; then
     notify-send -t 1000 -i dialog-password-symbolic kkae "New random password saved in the clipboard."
-    debug_message "Notification sent. Exit code: ${?}"
+  elif [[ ${os} == 'macos' ]] ; then
+    osascript -e 'display notification "New random password saved in the clipboard." with title "kkae"'
+  elif [[ ${os} == 'windows' ]] ; then
+    notify-send --category kkae --appId kkae "New random password saved in the clipboard."
   fi
+  debug_message "Notification sent. Exit code: ${?}"
   exit 0
 fi
