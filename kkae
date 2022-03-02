@@ -1,5 +1,8 @@
-#!/usr/bin/bash
+#!/bin/bash
 kkae_version='v1.0'
+
+# Needed for macOS compatibility
+export LC_ALL=C
 
 debug_message () {
 if [[ ${debug} == 'true' ]] ; then
