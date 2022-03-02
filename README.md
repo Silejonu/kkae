@@ -68,16 +68,15 @@ Users should be able to create a button/Spotlight shortcut [this way](https://st
 
 #### On WSL
 
-Create a script named `kkae.bat` with the following content:
+Create a script named `kkae.bat` wherever you like, with the following content:
 ```
 @echo off
 title kkae
 wsl.exe kkae
 exit
 ```
-and save it wherever you like.
 
-Go into `%AppData%\Microsoft\Windows\Start Menu\Programs` and right-click -> New -> Shortcut.
+Then go into `%AppData%\Microsoft\Windows\Start Menu\Programs` and right-click -> New -> Shortcut.
 
 Location: `cmd.exe /c "\path\to\kkae.bat`
 
