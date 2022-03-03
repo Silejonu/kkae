@@ -167,7 +167,7 @@ while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
       fi
       debug_message "Notification sent. Exit code: ${?}"
     fi
-    exit 2
+    exit 3
   }
   # Quit the program if a valid password could not be generated before the ${countdown}
   (( ${SECONDS} < ${countdown} )) || timeout
