@@ -4,7 +4,7 @@ kkae_version='v1.0'
 # Needed for macOS compatibility
 export LC_ALL=C
 
-debug_message () {
+debug_message() {
 if [[ ${debug} == 'true' ]] ; then
   echo "${@}"
 fi
@@ -142,7 +142,7 @@ if [[ ${which_characters} = 'true' ]] ; then
   exit 0
 fi
 
-generate_password () {
+generate_password() {
   password=$(tr -dc "${tr_character_set}" < /dev/urandom |\
   tr -d "${excluded_characters}${similar_characters}${excluded_letters}" |\
   head -c "${password_length}")
@@ -153,7 +153,7 @@ debug_message "Preparing to generate the password…"
 password_diversity_target='1'
 # Generate passwords until at least one character of each selected category is found in a single password
 while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
-  timeout () {
+  timeout() {
     printf "Could not generate a valid password after %ss.\n" "${countdown}" >&2
     printf "Try again, or review your parameters.\n" >&2
     printf "Edit /etc/kkae.conf to increase the timeout.\n" >&2
@@ -191,7 +191,7 @@ while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
   # Reset the password diversity on each new pass
   password_diversity='0'
   # Create a function to record the diversity of the generated password
-  record_diversity () {
+  record_diversity() {
   password_diversity=$(( ${password_diversity} + 1 ))
   }
   # Check if the password contains at least one number of a given category
