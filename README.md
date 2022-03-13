@@ -64,7 +64,7 @@ git clone https://github.com/Silejonu/kkae
 
 #### On macOS
 
-Open Script Editor, make sur AppleScript is selected in the dropdown menu in the top-left corner, and enter the following text:
+Open Script Editor, make sure AppleScript is selected in the dropdown menu in the top-left corner, and enter the following text:
 ```
 do shell script "/usr/local/bin/kkae"
 ```
