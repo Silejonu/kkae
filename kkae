@@ -1,5 +1,5 @@
 #!/bin/bash
-kkae_version='v1.0'
+kkae_version='v1.1'
 
 # Needed for macOS compatibility
 export LC_ALL=C
@@ -20,7 +20,7 @@ elif [[ "${XDG_SESSION_TYPE}" == "x11" ]] ; then
 fi
 
 # Make sure all dependencies are met
-for dependency in tr fold sort head cat ${clipboard_manager} ; do
+for dependency in tr cat cut echo fold head sort ${clipboard_manager} ; do
   if ! which ${dependency} &> /dev/null ; then
     printf "Missing dependency: %s.\n" "${dependency}" >&2
     exit 1
@@ -31,18 +31,19 @@ usage() {
 cat << EOF
 usage: ${0} [-asmdpwbvh] [-l LENGTH] [-c CASE] [-e LIST]
 Generate a random password and save it into the clipboard.
-  -l LENGTH  Character length of the password (default is ${password_length}).
-  -c CASE    Only include lowercase or uppercase letters.
-  -a         Only include alphanumerical characters.
-  -s         Include normally ignored similar characters (${similar_characters}).
-  -e 'LIST'  String (in single quotes) or file with excluded characters.
-  -m         Save the password into the middle-click clipboard.
-  -d         Do not send a notification when the password has been saved.
-  -p         Print the password instead of saving it into the clipboard.
-  -w         Print the list of currently included characters and exit.
-  -b         Enable debug mode.
-  -v         Print the version number and exit.
-  -h         Print these instructions and exit.
+  -l LENGTH   Character length of the password (default is ${password_length}).
+  -c CASE     Only include lowercase or uppercase letters.
+  -a          Only include alphanumerical characters.
+  -s          Include normally ignored similar characters (${similar_characters}).
+  -e 'LIST'   String (in single quotes) or file with excluded characters.
+  -r MIN-MAX  Percentage range of special characters (default is ${min_special_characters_ratio}-${max_special_characters_ratio}).
+  -m          Save the password into the middle-click clipboard.
+  -d          Do not send a notification when the password has been saved.
+  -p          Print the password instead of saving it into the clipboard.
+  -w          Print the list of currently included characters and exit.
+  -b          Enable debug mode.
+  -v          Print the version number and exit.
+  -h          Print these instructions and exit.
 EOF
 }
 
@@ -52,6 +53,8 @@ password_case='both' # valid values: lowercase, uppercase, both
 tr_character_set='[:graph:]' # man tr to see available options
 similar_characters="0oO1lI\"'"
 excluded_characters=''
+min_special_characters_ratio='10' # minimum percentage of special characters
+max_special_characters_ratio='20' # maximum percentage of special characters
 middle_click_clipboard='false'
 do_not_notify='false'
 countdown='5' # waiting time in seconds for a valid password before giving up
@@ -62,9 +65,9 @@ if [[ -f /etc/kkae.conf ]] ; then
 fi
 
 # Parse the command-line options
-while getopts l:c:ase:mdpwbvh option ; do
+while getopts l:c:ase:r:mdpwbvh option ; do
   case ${option} in
-    l) password_length=${OPTARG}
+    l) password_length="${OPTARG}"
        valid_number='^[0-9]+$'
        if ! [[ ${password_length} =~ ${valid_number} ]] ||\
        [[ ${password_length} -lt 0 ]] ||\
@@ -74,7 +77,7 @@ while getopts l:c:ase:mdpwbvh option ; do
          printf "Edit /etc/kkae.conf to change the maximum password length.\n" >&2
          exit 1
        fi ;;
-    c) password_case=${OPTARG}
+    c) password_case="${OPTARG}"
        if [[ ${password_case} == 'lowercase' ]] ; then
          excluded_letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
        elif [[ ${password_case} == 'uppercase' ]] ; then
@@ -96,6 +99,16 @@ while getopts l:c:ase:mdpwbvh option ; do
          excluded_characters="${OPTARG}"
        fi
        ;;
+    r) min_special_characters_ratio="$(echo "${OPTARG}" | cut -d'-' -f1)"
+       max_special_characters_ratio="$(echo "${OPTARG}" | cut -d'-' -f2)"
+       if [[ min_special_characters_ratio -gt max_special_characters_ratio ]] ; then
+         printf "Invalid range in -r.\n" >&2
+         exit 1
+       fi
+       if [[ max_special_characters_ratio -lt 1 ]] ; then
+         printf "Upper range of -r can't be lower than 1.\nIf you want to exclude special characters entirely, use -a instead.\n" >&2
+         exit 1
+       fi ;;
     m) middle_click_clipboard='true' ;;
     d) do_not_notify='true' ;;
     p) print_password='true' ;;
@@ -108,7 +121,7 @@ while getopts l:c:ase:mdpwbvh option ; do
 done
 
 # Clear the options parsed by getopts
-shift $(( ${OPTIND} - 1 ))
+shift $(( OPTIND - 1 ))
 
 # Exit in case an invalid option has been entered
 if [[ ${#} -gt 0 ]] ; then
@@ -126,7 +139,7 @@ else
   os='windows'
   debug_message "System detected: Windows Subsystem for Linux"
   # Add support for notifications via wsl-notify-send
-  notify-send() { wsl-notify-send.exe --category $WSL_DISTRO_NAME "${@}"; }
+  notify-send() { wsl-notify-send.exe --category "${WSL_DISTRO_NAME}" "${@}"; }
 fi
 
 valid_characters=$(tr -dc "${tr_character_set}" < /dev/urandom |\
@@ -142,6 +155,15 @@ if [[ ${which_characters} = 'true' ]] ; then
   exit 0
 fi
 
+min_special_characters="$(( password_length * min_special_characters_ratio / 100 ))"
+debug_message "Minimum amount of special characters: ${min_special_characters} (${min_special_characters_ratio}%)"
+max_special_characters="$(( password_length * max_special_characters_ratio / 100 ))"
+debug_message "Maximum amount of special characters: ${max_special_characters} (${max_special_characters_ratio}%)"
+if [[ max_special_characters -eq 0 ]] ; then
+  max_special_characters='1'
+  debug_message "Maximum amount of special characters set to 1 to account for rounding."
+fi
+
 generate_password() {
   password=$(tr -dc "${tr_character_set}" < /dev/urandom |\
   tr -d "${excluded_characters}${similar_characters}${excluded_letters}" |\
@@ -154,45 +176,45 @@ password_diversity_target='1'
 # Generate passwords until at least one character of each selected category is found in a single password
 while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
   timeout() {
-    printf "Could not generate a valid password after %ss.\n" "${countdown}" >&2
+    printf "Aborted: could not generate a valid password after %ss.\n" "${countdown}" >&2
     printf "Try again, or review your parameters.\n" >&2
-    printf "Edit /etc/kkae.conf to increase the timeout.\n" >&2
+    printf "Alternatively, edit /etc/kkae.conf to increase the timeout.\n" >&2
     if [[ ${do_not_notify} == 'false' ]] ; then
       if [[ ${os} == 'linux' ]] ; then
         notify-send -t 1000 -i dialog-password-symbolic kkae "Could not generate a valid password in time."
       elif [[ ${os} == 'macos' ]] ; then
         osascript -e 'display notification "Could not generate a valid password in time." with title "kkae"'
       elif [[ ${os} == 'windows' ]] ; then
-        notify-send --category kkae --appId kkae "Could not generate a valid password in time."   
+        notify-send --category kkae --appId kkae "Could not generate a valid password in time."
       fi
       debug_message "Notification sent. Exit code: ${?}"
     fi
     exit 3
   }
   # Quit the program if a valid password could not be generated before the ${countdown}
-  (( ${SECONDS} < ${countdown} )) || timeout
+  (( SECONDS < countdown )) || timeout
   generate_password
   # Reset the password diversity target on each new pass
   password_diversity_target='0'
   # Check if the password should contain at least one character of a given category
   if [[ "${valid_characters}" == *[0-9]* ]] ; then
-    password_diversity_target=$(( ${password_diversity_target} + 1 ))
+    password_diversity_target=$(( password_diversity_target + 1 ))
   fi
   if [[ "${valid_characters}" == *[a-z]* ]] ; then
-    password_diversity_target=$(( ${password_diversity_target} + 1 ))
+    password_diversity_target=$(( password_diversity_target + 1 ))
   fi
   if [[ "${valid_characters}" == *[A-Z]* ]] ; then
-    password_diversity_target=$(( ${password_diversity_target} + 1 ))
+    password_diversity_target=$(( password_diversity_target + 1 ))
   fi
   if [[ "${#valid_special_characters}" -gt 0 ]] ; then
-    password_diversity_target=$(( ${password_diversity_target} + 1 ))
+    password_diversity_target=$(( password_diversity_target + 1 ))
   fi
 
   # Reset the password diversity on each new pass
   password_diversity='0'
   # Create a function to record the diversity of the generated password
   record_diversity() {
-  password_diversity=$(( ${password_diversity} + 1 ))
+  password_diversity=$(( password_diversity + 1 ))
   }
   # Check if the password contains at least one number of a given category
   if [[ "${password}" == *[0-9]* ]] ; then
@@ -204,16 +226,16 @@ while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
   if [[ "${password}" == *[A-Z]* ]] ; then
     record_diversity
   fi
-  special_characters_in_password=$(echo "${password}" | tr -d '[a-zA-Z0-9]\n')
-  if [[ "${#special_characters_in_password}" -gt 0 ]] ; then
+  special_characters_in_password=$(printf "%s" "${password}" | tr -d 'a-zA-Z0-9')
+  if [[ "${#special_characters_in_password}" -gt min_special_characters ]] && [[ "${#special_characters_in_password}" -le max_special_characters ]] ; then
     record_diversity
   fi
 done
 debug_message "Password generated: ${password}"
 
 if [[ ${print_password} = 'true' ]] ; then
-  echo "${password}"
   debug_message "Printing password:"
+  echo "${password}"
   exit 0
 fi
 
