@@ -20,7 +20,7 @@ elif [[ "${XDG_SESSION_TYPE}" == "x11" ]] ; then
 fi
 
 # Make sure all dependencies are met
-for dependency in tr cat cut echo fold head sort ${clipboard_manager} ; do
+for dependency in tr cat cut fold head sort wc ${clipboard_manager} ; do
   if ! which ${dependency} &> /dev/null ; then
     printf "Missing dependency: %s.\n" "${dependency}" >&2
     exit 1
@@ -90,11 +90,7 @@ while getopts l:c:ase:r:mdpwbvh option ; do
     a) tr_character_set='[:alnum:]' ;;
     s) similar_characters='' ;;
     e) if [[ -f ${OPTARG} ]] ; then
-         excluded_characters=$(cat "${OPTARG}")
-         if [[ $(wc -l "${excluded_characters}") -gt 1 ]] ; then
-           printf "The exclusion list must be a single line.\n" >&2
-           exit 1
-         fi
+         excluded_characters=$(tr -d '\n' < "${OPTARG}")
        else
          excluded_characters="${OPTARG}"
        fi
@@ -162,7 +158,7 @@ fi
 if [[ ${print_current_settings} = 'true' ]] ; then
 cat << EOF
 $(tput bold)Current kkae settings$(tput sgr0)
-$(tput bold)Options passed in the terminal overwrite settings in /etc/kkae.conf$(tput sgr0)
+$(tput bold)Options passed in the terminal overwrite settings from /etc/kkae.conf$(tput sgr0)
 $(tput bold)Password length:$(tput sgr0) ${password_length}
 $(tput bold)Valid characters:$(tput sgr0) ${valid_characters}
 $(tput bold)Minimum amount of special characters:$(tput sgr0) ${min_special_characters} (${min_special_characters_ratio}%)
