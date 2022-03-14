@@ -15,7 +15,7 @@ Written in Bash, works on Linux (Wayland/X11), macOS, as well as on Windows via 
 
 ## Usage
 ```
-usage: kkae [-asmdpwbvh] [-l LENGTH] [-c CASE] [-e LIST]
+usage: kkae [-asmnpvbh] [-l LENGTH] [-c CASE] [-e LIST] [-r MIN-MAX]
 Generate a random password and save it into the clipboard.
   -l LENGTH   Character length of the password (default is 16).
   -c CASE     Only include lowercase or uppercase letters.
