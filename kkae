@@ -96,7 +96,9 @@ while getopts l:c:ase:r:mnpvbh option ; do
        ;;
     r) min_special_characters_ratio="$(echo "${OPTARG}" | cut -d'-' -f1)"
        max_special_characters_ratio="$(echo "${OPTARG}" | cut -d'-' -f2)"
-       if [[ min_special_characters_ratio -gt max_special_characters_ratio ]] ; then
+       if ! [[ "${min_special_characters_ratio}" =~ ^[0-9]+$ ]] ||\
+       ! [[ "${max_special_characters_ratio}" =~ ^[0-9]+$ ]] ||\
+       [[ "${min_special_characters_ratio}" -gt "${max_special_characters_ratio}" ]] ; then
          printf "Invalid range in -r.\n" >&2
          exit 1
        fi
