@@ -255,7 +255,7 @@ if [[ ${do_not_notify} == 'true' ]] ; then
   exit 0
 else
   if [[ ${os} == 'linux' ]] ; then
-    notify-send -t 1000 -i dialog-password-symbolic kkae "New random password saved in the clipboard."
+    notify-send -t 1000 --hint=int:transient:1 -i dialog-password-symbolic kkae "New random password saved in the clipboard."
   elif [[ ${os} == 'macos' ]] ; then
     osascript -e 'display notification "New random password saved in the clipboard." with title "kkae"'
   elif [[ ${os} == 'windows' ]] ; then
