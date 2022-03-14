@@ -1,5 +1,5 @@
 #!/bin/bash
-kkae_version='1.1'
+kkae_version='1.2-rc'
 
 # Needed for macOS compatibility
 export LC_ALL=C
@@ -98,7 +98,7 @@ while getopts l:c:ase:r:mnpvbh option ; do
        if ! [[ "${min_special_characters_ratio}" =~ ^[0-9]+$ ]] ||\
        ! [[ "${max_special_characters_ratio}" =~ ^[0-9]+$ ]] ||\
        [[ "${min_special_characters_ratio}" -gt "${max_special_characters_ratio}" ]] ; then
-         printf "Invalid range in -r.\n" >&2
+         printf "Invalid range: -r %s\n" "${OPTARG}" >&2
          exit 1
        fi
        if [[ "${max_special_characters_ratio}" -lt 1 ]] ; then
