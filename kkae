@@ -40,7 +40,7 @@ Generate a random password and save it into the clipboard.
   -m          Save the password into the middle-click clipboard.
   -d          Do not send a notification when the password has been saved.
   -p          Print the password instead of saving it into the clipboard.
-  -w          Print the list of currently included characters and exit.
+  -w          Show current settings and exit.
   -b          Enable debug mode.
   -v          Print the version number and exit.
   -h          Print these instructions and exit.
@@ -57,7 +57,7 @@ min_special_characters_ratio='10' # minimum percentage of special characters
 max_special_characters_ratio='20' # maximum percentage of special characters
 middle_click_clipboard='false'
 do_not_notify='false'
-countdown='5' # waiting time in seconds for a valid password before giving up
+countdown='5' # time in seconds searching for a valid password before giving up
 debug='false'
 # If /etc/kkae.conf exists, overwrite the variables
 if [[ -f /etc/kkae.conf ]] ; then
@@ -112,7 +112,7 @@ while getopts l:c:ase:r:mdpwbvh option ; do
     m) middle_click_clipboard='true' ;;
     d) do_not_notify='true' ;;
     p) print_password='true' ;;
-    w) which_characters='true' ;;
+    w) print_current_settings='true' ;;
     b) debug='true' ;;
     v) printf "%s\n" "${kkae_version}" && exit 0 ;;
     h) usage && exit 0 ;;
@@ -150,11 +150,6 @@ valid_special_characters=$(echo "${valid_characters}" | tr -d '[:alnum:]' |\
 head -c 10000 | fold -w1 | sort -u | tr -d '\n')
 debug_message "Valid special characters: ${valid_special_characters}"
 
-if [[ ${which_characters} = 'true' ]] ; then
-  echo "${valid_characters}"
-  exit 0
-fi
-
 min_special_characters="$(( password_length * min_special_characters_ratio / 100 ))"
 debug_message "Minimum amount of special characters: ${min_special_characters} (${min_special_characters_ratio}%)"
 max_special_characters="$(( password_length * max_special_characters_ratio / 100 ))"
@@ -162,6 +157,23 @@ debug_message "Maximum amount of special characters: ${max_special_characters} (
 if [[ max_special_characters -eq 0 ]] ; then
   max_special_characters='1'
   debug_message "Maximum amount of special characters set to 1 to account for rounding."
+fi
+
+if [[ ${print_current_settings} = 'true' ]] ; then
+cat << EOF
+$(tput bold)Current kkae settings$(tput sgr0)
+$(tput bold)Options passed in the terminal overwrite settings in /etc/kkae.conf$(tput sgr0)
+$(tput bold)Password length:$(tput sgr0) ${password_length}
+$(tput bold)Valid characters:$(tput sgr0) ${valid_characters}
+$(tput bold)Minimum amount of special characters:$(tput sgr0) ${min_special_characters} (${min_special_characters_ratio}%)
+$(tput bold)Maximum amount of special characters:$(tput sgr0) ${max_special_characters} (${max_special_characters_ratio}%)
+$(tput bold)Excluded characters:$(tput sgr0) ${similar_characters}${excluded_characters}
+$(tput bold)Copy to the middle-click clipboard:$(tput sgr0) ${middle_click_clipboard}
+$(tput bold)Do not send notifications:$(tput sgr0) ${do_not_notify}
+$(tput bold)Give up finding a valid password after:$(tput sgr0) ${countdown}s
+$(tput bold)Debug mode enabled:$(tput sgr0) ${debug}
+EOF
+exit 0
 fi
 
 generate_password() {
