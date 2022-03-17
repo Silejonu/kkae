@@ -1,15 +1,15 @@
 #!/bin/bash
 
 if [[ ${UID} -ne 0 ]] ; then
-  printf "Error: this script requires superuser privileges.\nRun it with: sudo ${0}\n" >&2
+  printf "Error: this script requires superuser privileges.\nRun it with: sudo %s\n" "${0}" >&2
   exit 1
 fi
 
 # Determine the platform the script is running on
-if [[ $(uname -r | grep -i Microsoft) ]] ; then
+if uname -r | grep -qi Microsoft ; then
   os='windows'
   if ! touch /mnt/c/Windows &> /dev/null ; then
-    printf "Error: WSL needs to be launched with admin privileges to be properly installed.\n" >&2
+    printf "Error: WSL needs to be ran as admin to properly install kkae.\n" >&2
     exit 1
   fi
 elif [[ $(uname) == 'Darwin' ]] ; then
@@ -51,7 +51,7 @@ chmod 755 /Applications/kkae.app/Contents/MacOS/kkae
 
 install_windows_application() {
 # Create the script that'll be called from within Windows
-user_dir=$(wslpath $("/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" '$HOME') | tr -d '\r' )
+user_dir=$(wslpath "$(/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe '$HOME')" | tr -d '\r' )
 mkdir -p "${user_dir}/kkae"
 tee "${user_dir}/kkae/kkae.bat" << EOF > /dev/null
 @echo off
@@ -63,7 +63,7 @@ EOF
 cp Windows/kkae.ico "${user_dir}/kkae/"
 
 # Install wsl-notify-send's latest release
-cd $(mktemp -d)
+cd "$(mktemp -d)" || exit 1
 latest_wsl_notify_send_release=$(curl --silent https://api.github.com/repos/stuartleeks/wsl-notify-send/releases/latest | grep tag_name | cut -d'"' -f4)
 wget "https://github.com/stuartleeks/wsl-notify-send/releases/download/${latest_wsl_notify_send_release}/wsl-notify-send_windows_amd64.zip"
 sudo apt install -y unzip
@@ -73,7 +73,7 @@ unzip wsl-notify-send_windows_amd64.zip
 cp -f wsl-notify-send.exe /mnt/c/Windows
 
 # Create the shortcut to appear in the Start menu
-cd "${user_dir}"
+cd "${user_dir}" || exit 1
 tee CreatekkaeShortcut.vbs << EOF > /dev/null
 Set oWS = WScript.CreateObject("WScript.Shell")
 sLinkFile = "AppData\Roaming\Microsoft\Windows\Start Menu\Programs\kkae.lnk"
@@ -118,7 +118,7 @@ chmod 755 /usr/local/bin/kkae
 
 # Install the configuration file
 if [[ -f /etc/kkae.conf ]] ; then
-  read -p 'The configuration file /etc/kkae.conf already exists. Do you want to overwrite it? [y/N] ' yn
+  read -pr 'The configuration file /etc/kkae.conf already exists. Do you want to overwrite it? [y/N] ' yn
   case ${yn} in
     [yY]|[yY][eE][sS] )
       cp -f kkae.conf /etc/

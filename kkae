@@ -111,7 +111,7 @@ if [[ "${#}" -gt 0 ]] ; then
 fi
 
 # Determine the platform the script is running on
-if [[ $(uname -r | grep -i Microsoft) ]] ; then
+if uname -r | grep -qi Microsoft ; then
   os='windows'
   debug_message "System detected: Windows Subsystem for Linux"
   kkae_notification() {
