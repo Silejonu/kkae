@@ -1,5 +1,5 @@
 #!/bin/bash
-kkae_version='1.2-rc'
+kkae_version='1.2'
 
 # Needed for macOS compatibility
 export LC_ALL=C

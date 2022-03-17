@@ -1,0 +1,2 @@
+convert -background none -density 2000 -resize '256x256' dialog-password-symbolic.svg kkae.png
+convert -background none -density 144 kkae.png kkae.icns
