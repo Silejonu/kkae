@@ -115,6 +115,7 @@ if [[ -f /etc/kkae.conf ]] ; then
   read -p 'The configuration file /etc/kkae.conf already exists. Do you want to overwrite it? [y/N] ' yn
   case ${yn} in
     [yY]|[yY][eE][sS] )
+      cp -f kkae.conf /etc/
       printf 'The configuration file has been updated.\n' ;;
     * )
       printf 'The configuration file has been kept untouched.\n' ;;
