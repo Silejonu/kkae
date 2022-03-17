@@ -83,14 +83,15 @@ fi
 
 # Make sure all dependencies are met
 if [[ ${os} == 'linux' ]] ; then
-for clipboard_manager in xclip wl-clipboard ; do
-  apt install -y ${clipboard_manager} 2> /dev/null ||\
-  dnf install -y ${clipboard_manager} 2> /dev/null ||\
-  pacman --noconfirm -S ${clipboard_manager} 2> /dev/null ||\
-  zypper -n install ${clipboard_manager} 2> /dev/null ||\
-  xbps-install -y -S ${clipboard_manager} 2> /dev/null ||\
-  eopkg install -y ${clipboard_manager} 2> /dev/null ||\
-  printf "Error: missing dependency: %s\n Please install it and re-launch this script." "${clipboard_manager}" >&2 && exit 1
+  for clipboard_manager in xclip wl-clipboard ; do
+    apt install -y ${clipboard_manager} 2> /dev/null ||\
+    dnf install -y ${clipboard_manager} 2> /dev/null ||\
+    pacman --noconfirm -S ${clipboard_manager} 2> /dev/null ||\
+    zypper -n install ${clipboard_manager} 2> /dev/null ||\
+    xbps-install -y -S ${clipboard_manager} 2> /dev/null ||\
+    eopkg install -y ${clipboard_manager} 2> /dev/null ||\
+    { printf "\nError: missing dependency: %s\nPlease install it and re-launch this script.\n" "${clipboard_manager}" >&2 ; exit 1 ; }
+  done
 fi
 for dependency in tr cat cut fold head sort wc ; do
   if ! which ${dependency} &> /dev/null ; then
@@ -100,7 +101,7 @@ for dependency in tr cat cut fold head sort wc ; do
     zypper -n install ${dependency} 2> /dev/null ||\
     xbps-install -y -S ${dependency} 2> /dev/null ||\
     eopkg install -y ${dependency} 2> /dev/null ||\
-    printf "Error: missing dependency: %s\n Please install it and re-launch this script." "${dependency}" >&2 && exit 1
+    { printf "\nError: missing dependency: %s\nPlease install it and re-launch this script.\n" "${dependency}" >&2 ; exit 1 ; }
   fi
 done
 
@@ -126,6 +127,6 @@ case ${os} in
   windows )  install_windows_application ;;
 esac
 
-printf "Installation finished.\nStart using kkae by running it in the terminal or launching the application.\n Run kkae -h to learn about all of its options!\n"
+printf "\nInstallation finished.\nStart using kkae by running it in the terminal or launching the application.\nRun kkae -h to learn about all of its options!\n"
 
 exit 0
