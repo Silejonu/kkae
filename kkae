@@ -1,18 +1,35 @@
 #!/bin/bash
-kkae_version='1.2-rc'
+kkae_version='1.1'
 
 # Needed for macOS compatibility
 export LC_ALL=C
 
 debug_message() {
-if [[ "${debug}" == 'true' ]] ; then
-  printf "%s\n" "${@}"
+if [[ ${debug} == 'true' ]] ; then
+  echo "${@}"
 fi
 }
 
+# Determine the display server used
+if [[ "${XDG_SESSION_TYPE}" == "wayland" ]] ; then
+  os='linux'
+  clipboard_manager='wl-copy'
+elif [[ "${XDG_SESSION_TYPE}" == "x11" ]] ; then
+  os='linux'
+  clipboard_manager='xclip'
+fi
+
+# Make sure all dependencies are met
+for dependency in tr cat cut fold head sort wc ${clipboard_manager} ; do
+  if ! which ${dependency} &> /dev/null ; then
+    printf "Missing dependency: %s.\n" "${dependency}" >&2
+    exit 1
+  fi
+done
+
 usage() {
 cat << EOF
-usage: ${0} [-asmnpvbh] [-l LENGTH] [-c CASE] [-e LIST] [-r MIN-MAX]
+usage: ${0} [-asmdpwbvh] [-l LENGTH] [-c CASE] [-e LIST]
 Generate a random password and save it into the clipboard.
   -l LENGTH   Character length of the password (default is ${password_length}).
   -c CASE     Only include lowercase or uppercase letters.
@@ -23,7 +40,6 @@ Generate a random password and save it into the clipboard.
   -m          Save the password into the middle-click clipboard.
   -n          Do not send a notification when the password has been saved.
   -p          Print the password instead of saving it into the clipboard.
-  -P          Same as -p, but without the trailing newline.
   -v          Show current settings and exit.
   -b          Enable debug mode.
   -h          Print these instructions and exit.
@@ -48,21 +64,22 @@ if [[ -f /etc/kkae.conf ]] ; then
 fi
 
 # Parse the command-line options
-while getopts l:c:ase:r:mnpPvbh option ; do
+while getopts l:c:ase:r:mnpvbh option ; do
   case ${option} in
     l) password_length="${OPTARG}"
-       if ! [[ "${password_length}" =~ ^[0-9]+$ ]] ||\
-       [[ "${password_length}" -lt 0 ]] ||\
-       [[ "${password_length}" -gt "${maximum_password_length}" ]]
+       valid_number='^[0-9]+$'
+       if ! [[ ${password_length} =~ ${valid_number} ]] ||\
+       [[ ${password_length} -lt 0 ]] ||\
+       [[ ${password_length} -gt ${maximum_password_length} ]]
        then
          printf "Option -l requires a number between 0 and %s.\n" "${maximum_password_length}">&2
          printf "Edit /etc/kkae.conf to change the maximum password length.\n" >&2
          exit 1
        fi ;;
     c) password_case="${OPTARG}"
-       if [[ "${password_case}" == 'lowercase' ]] ; then
+       if [[ ${password_case} == 'lowercase' ]] ; then
          excluded_letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-       elif [[ "${password_case}" == 'uppercase' ]] ; then
+       elif [[ ${password_case} == 'uppercase' ]] ; then
          excluded_letters='abcdefghijklmnopqrstuvwxyz'
        else
          printf "Option -c accepts the following paramaters: lowercase, uppercase.\n" >&2
@@ -71,7 +88,7 @@ while getopts l:c:ase:r:mnpPvbh option ; do
        ;;
     a) tr_character_set='[:alnum:]' ;;
     s) similar_characters='' ;;
-    e) if [[ -f "${OPTARG}" ]] ; then
+    e) if [[ -f ${OPTARG} ]] ; then
          excluded_characters=$(tr -d '\n' < "${OPTARG}")
        else
          excluded_characters="${OPTARG}"
@@ -79,20 +96,17 @@ while getopts l:c:ase:r:mnpPvbh option ; do
        ;;
     r) min_special_characters_ratio="$(echo "${OPTARG}" | cut -d'-' -f1)"
        max_special_characters_ratio="$(echo "${OPTARG}" | cut -d'-' -f2)"
-       if ! [[ "${min_special_characters_ratio}" =~ ^[0-9]+$ ]] ||\
-       ! [[ "${max_special_characters_ratio}" =~ ^[0-9]+$ ]] ||\
-       [[ "${min_special_characters_ratio}" -gt "${max_special_characters_ratio}" ]] ; then
-         printf "Invalid range: -r %s\n" "${OPTARG}" >&2
+       if [[ min_special_characters_ratio -gt max_special_characters_ratio ]] ; then
+         printf "Invalid range in -r.\n" >&2
          exit 1
        fi
-       if [[ "${max_special_characters_ratio}" -lt 1 ]] ; then
+       if [[ max_special_characters_ratio -lt 1 ]] ; then
          printf "Upper range of -r can't be lower than 1.\nIf you want to exclude special characters entirely, use -a instead.\n" >&2
          exit 1
        fi ;;
     m) middle_click_clipboard='true' ;;
     n) do_not_notify='true' ;;
-    p) print_password='newline' ;;
-    P) print_password='nonewline' ;;
+    p) print_password='true' ;;
     v) print_current_settings='true' ;;
     b) debug='true' ;;
     h) usage && exit 0 ;;
@@ -104,40 +118,24 @@ done
 shift $(( OPTIND - 1 ))
 
 # Exit in case an invalid option has been entered
-if [[ "${#}" -gt 0 ]] ; then
-  printf "Invalid option or parameter: %s\n" "${@}" >&2
+if [[ ${#} -gt 0 ]] ; then
+  printf "Invalid option or parameter.\n" >&2
   usage
   exit 1
 fi
 
-# Determine the platform the script is running on
-if [[ $(uname -r | grep -i Microsoft) ]] ; then
-  os='windows'
-  debug_message "System detected: Windows Subsystem for Linux"
-  kkae_notification() {
-    if [[ "${do_not_notify}" == 'false' ]] ; then
-      wsl-notify-send.exe --appId kkae --category kkae --expire-time 1 "${1}"
-    fi
-  }
+if [[ ${os} == 'linux' ]] ; then
+  debug_message "Display server detected: ${XDG_SESSION_TYPE}"
 elif [[ $(uname) == 'Darwin' ]] ; then
   os='macos'
   debug_message "System detected: macOS"
-  kkae_notification() {
-    if [[ "${do_not_notify}" == 'false' ]] ; then
-      osascript -e "display notification \"${1}\" with title \"kkae\""
-    fi
-  }
 else
-  os='linux'
-  debug_message "System detected: Linux"
-  kkae_notification() {
-    if [[ "${do_not_notify}" == 'false' ]] ; then
-      notify-send -t 1000 --hint=int:transient:1 -i dialog-password-symbolic kkae "${1}"
-    fi
-  }
+  os='windows'
+  debug_message "System detected: Windows Subsystem for Linux"
+  # Add support for notifications via wsl-notify-send
+  notify-send() { wsl-notify-send.exe --category "${WSL_DISTRO_NAME}" "${@}"; }
 fi
 
-# Check which characters can be used with the current parameters
 valid_characters=$(tr -dc "${tr_character_set}" < /dev/urandom |\
 tr -d "${excluded_characters}${similar_characters}${excluded_letters}" |\
 head -c 10000 | fold -w1 | sort -u | tr -d '\n')
@@ -146,17 +144,16 @@ valid_special_characters=$(echo "${valid_characters}" | tr -d '[:alnum:]' |\
 head -c 10000 | fold -w1 | sort -u | tr -d '\n')
 debug_message "Valid special characters: ${valid_special_characters}"
 
-# Determine the minimum and maximum amount of special characters the password must contain
 min_special_characters="$(( password_length * min_special_characters_ratio / 100 ))"
 debug_message "Minimum amount of special characters: ${min_special_characters} (${min_special_characters_ratio}%)"
 max_special_characters="$(( password_length * max_special_characters_ratio / 100 ))"
 debug_message "Maximum amount of special characters: ${max_special_characters} (${max_special_characters_ratio}%)"
-if [[ "${max_special_characters}" -eq 0 ]] ; then
+if [[ max_special_characters -eq 0 ]] ; then
   max_special_characters='1'
   debug_message "Maximum amount of special characters set to 1 to account for rounding."
 fi
 
-if [[ "${print_current_settings}" = 'true' ]] ; then
+if [[ ${print_current_settings} = 'true' ]] ; then
 cat << EOF
 $(tput bold)kkae v${kkae_version}$(tput sgr0)
 $(tput bold)Options passed in the terminal overwrite settings from /etc/kkae.conf$(tput sgr0)
@@ -179,18 +176,25 @@ generate_password() {
   head -c "${password_length}")
 }
 
-debug_message "Generating the password…"
+debug_message "Preparing to generate the password…"
 # Pass a non-zero diversity target to trigger the while loop
 password_diversity_target='1'
 # Generate passwords until at least one character of each selected category is found in a single password
-until [[ "${password_diversity}" -eq "${password_diversity_target}" ]] ; do
-  (( password_generation_attempts += 1 ))
+while [[ ${password_diversity} -ne ${password_diversity_target} ]] ; do
   timeout() {
-    debug_message "${password_generation_attempts} passwords were generated, none passed the validity check."
     printf "Aborted: could not generate a valid password after %ss.\n" "${countdown}" >&2
     printf "Try again, or review your parameters.\n" >&2
     printf "Alternatively, edit /etc/kkae.conf to increase the timeout.\n" >&2
-    kkae_notification "Could not generate a valid password in time."
+    if [[ ${do_not_notify} == 'false' ]] ; then
+      if [[ ${os} == 'linux' ]] ; then
+        notify-send -t 1000 -i dialog-password-symbolic kkae "Could not generate a valid password in time."
+      elif [[ ${os} == 'macos' ]] ; then
+        osascript -e 'display notification "Could not generate a valid password in time." with title "kkae"'
+      elif [[ ${os} == 'windows' ]] ; then
+        notify-send --category kkae --appId kkae "Could not generate a valid password in time."
+      fi
+      debug_message "Notification sent. Exit code: ${?}"
+    fi
     exit 3
   }
   # Quit the program if a valid password could not be generated before the ${countdown}
@@ -200,84 +204,91 @@ until [[ "${password_diversity}" -eq "${password_diversity_target}" ]] ; do
   password_diversity_target='0'
   # Check if the password should contain at least one character of a given category
   if [[ "${valid_characters}" == *[0-9]* ]] ; then
-    (( password_diversity_target += 1 ))
+    password_diversity_target=$(( password_diversity_target + 1 ))
   fi
   if [[ "${valid_characters}" == *[a-z]* ]] ; then
-    (( password_diversity_target += 1 ))
+    password_diversity_target=$(( password_diversity_target + 1 ))
   fi
   if [[ "${valid_characters}" == *[A-Z]* ]] ; then
-    (( password_diversity_target += 1 ))
+    password_diversity_target=$(( password_diversity_target + 1 ))
   fi
   if [[ "${#valid_special_characters}" -gt 0 ]] ; then
-    (( password_diversity_target += 1 ))
+    password_diversity_target=$(( password_diversity_target + 1 ))
   fi
 
   # Reset the password diversity on each new pass
   password_diversity='0'
+  # Create a function to record the diversity of the generated password
+  record_diversity() {
+  password_diversity=$(( password_diversity + 1 ))
+  }
   # Check if the password contains at least one number of a given category
   if [[ "${password}" == *[0-9]* ]] ; then
-    (( password_diversity += 1 ))
+    record_diversity
   fi
   if [[ "${password}" == *[a-z]* ]] ; then
-    (( password_diversity += 1 ))
+    record_diversity
   fi
   if [[ "${password}" == *[A-Z]* ]] ; then
-    (( password_diversity += 1 ))
+    record_diversity
   fi
   special_characters_in_password=$(printf "%s" "${password}" | tr -d 'a-zA-Z0-9')
-  if [[ "${#special_characters_in_password}" -gt min_special_characters ]] &&\
-  [[ "${#special_characters_in_password}" -le max_special_characters ]] ; then
-    (( password_diversity += 1 ))
+  if [[ "${#special_characters_in_password}" -gt min_special_characters ]] && [[ "${#special_characters_in_password}" -le max_special_characters ]] ; then
+    record_diversity
   fi
 done
-debug_message "A valid password was found after ${password_generation_attempts} attempt(s)."
+debug_message "Password generated: ${password}"
 
-if [[ "${print_password}" = 'newline' ]] ; then
+if [[ ${print_password} = 'true' ]] ; then
   debug_message "Printing password:"
   echo "${password}"
   exit 0
-elif [[ "${print_password}" = 'nonewline' ]] ; then
-  debug_message "Printing password:"
-  printf "%s" "${password}"
-  exit 0
 fi
 
-# Save the password in the clipboard
-case "${os}" in
-  linux)    save_password_in_wayland_clipboard() {
-            if [[ "${middle_click_clipboard}" = 'true' ]] ; then
+# Save the password to the clipboard
+case ${XDG_SESSION_TYPE} in
+  wayland)  if [[ ${middle_click_clipboard} = 'true' ]] ; then
               debug_message "Saving the password into the middle-click clipboard."
               selection='--primary'
             fi
-            printf "%s" "${password}" | wl-copy ${selection} 2> /dev/null || return 1
-            debug_message "Password copied into the Wayland clipboard."
-            }
-            save_password_in_x11_clipboard() {
-            if [[ ${middle_click_clipboard} = 'true' ]] ; then
+              printf "%s" "${password}" | wl-copy ${selection}
+              debug_message "Password copied into the Wayland clipboard." ;;
+  x11)      if [[ ${middle_click_clipboard} = 'true' ]] ; then
               debug_message "Saving the password into the middle-click clipboard."
               selection='primary'
             else
               selection='clipboard'
             fi
             printf "%s" "${password}" | xclip -selection ${selection}
-            debug_message "Password copied into the X11 clipboard."
-            }
-            save_password_in_wayland_clipboard || save_password_in_x11_clipboard ;;
-  macos)    if [[ "${middle_click_clipboard}" = 'true' ]] ; then
-              printf "Error: middle-click clipboard not available on macOS.\n" >&2
-              exit 1
-            fi
-            printf "%s" "${password}" | pbcopy
-            debug_message "Password copied into the macOS clipboard." ;;
-  windows)  if [[ "${middle_click_clipboard}" = 'true' ]] ; then
-              printf "Error: middle-click clipboard not available on WSL.\n" >&2
-              exit 1
-            fi
-            printf "%s" "${password}" | clip.exe
-            debug_message "Password copied into the Windows clipboard." ;;
+            debug_message "Password copied into the X11 clipboard." ;;
+  *)        if [[ ${os} == 'macos' ]] ; then
+              if [[ ${middle_click_clipboard} = 'true' ]] ; then
+                printf "Error: middle-click clipboard not available in macOS.\n" >&2
+                exit 1
+              fi
+              printf "%s" "${password}" | pbcopy
+              debug_message "Password copied into the macOS clipboard."
+            elif [[ ${os} == 'windows' ]] ; then
+              if [[ ${middle_click_clipboard} = 'true' ]] ; then
+                printf "Error: middle-click clipboard not available in WSL.\n" >&2
+                exit 1
+              fi
+              printf "%s" "${password}" | clip.exe
+              debug_message "Password copied into the Windows clipboard."
+            fi ;;
 esac
 
-kkae_notification "New random password saved in the clipboard."
-
-exit 0
-
+if [[ ${do_not_notify} == 'true' ]] ; then
+  debug_message "Do not send a notification."
+  exit 0
+else
+  if [[ ${os} == 'linux' ]] ; then
+    notify-send -t 1000 --hint=int:transient:1 -i dialog-password-symbolic kkae "New random password saved in the clipboard."
+  elif [[ ${os} == 'macos' ]] ; then
+    osascript -e 'display notification "New random password saved in the clipboard." with title "kkae"'
+  elif [[ ${os} == 'windows' ]] ; then
+    notify-send --category kkae --appId kkae "New random password saved in the clipboard."
+  fi
+  debug_message "Notification sent. Exit code: ${?}"
+  exit 0
+fi
