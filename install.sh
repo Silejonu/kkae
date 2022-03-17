@@ -38,7 +38,7 @@ chmod 755 /Applications/kkae.app/Contents/MacOS/kkae
 
 install_windows_application() {
 # Create the script that'll be called from within Windows
-user_dir=$(wslpath $(powershell.exe '$HOME') | tr -d '\r' )
+user_dir=$(wslpath $("/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" '$HOME') | tr -d '\r' )
 mkdir -p "${user_dir}/kkae"
 tee "${user_dir}/kkae/kkae.bat" << EOF > /dev/null
 @echo off
@@ -55,7 +55,7 @@ latest_wsl_notify_send_release=$(curl --silent https://api.github.com/repos/stua
 wget "https://github.com/stuartleeks/wsl-notify-send/releases/download/${latest_wsl_notify_send_release}/wsl-notify-send_windows_amd64.zip"
 sudo apt install -y unzip
 unzip wsl-notify-send_windows_amd64.zip
-cp -f wsl-notify-send.exe /usr/local/bin/
+cp -f wsl-notify-send.exe /mnt/c/Windows
 
 # Create the shortcut to appear in the Start menu
 cd "${user_dir}"
@@ -68,12 +68,12 @@ Set oLink = oWS.CreateShortcut(sLinkFile)
     oLink.IconLocation = "%HOMEDRIVE%%HOMEPATH%\kkae\kkae.ico"
 oLink.Save
 EOF
-powershell.exe './CreatekkaeShortcut.vbs'
-rm ./CreatekkaeShorcut.vbs
+"/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" './CreatekkaeShortcut.vbs'
+rm ./CreatekkaeShortcut.vbs
 }
 
 # Determine the platform the script is running on
-if [[ $(grep Microsoft /proc/version) ]] ; then
+if [[ $(uname -r | grep -i Microsoft) ]] ; then
   os='windows'
 elif [[ $(uname) == 'Darwin' ]] ; then
   os='macos'
@@ -120,6 +120,8 @@ if [[ -f /etc/kkae.conf ]] ; then
     * )
       printf 'The configuration file has been kept untouched.\n' ;;
   esac
+else
+  cp kkae.conf /etc/
 fi
 
 case ${os} in

@@ -111,12 +111,12 @@ if [[ "${#}" -gt 0 ]] ; then
 fi
 
 # Determine the platform the script is running on
-if [[ $(grep Microsoft /proc/version) ]] ; then
+if [[ $(uname -r | grep -i Microsoft) ]] ; then
   os='windows'
   debug_message "System detected: Windows Subsystem for Linux"
   kkae_notification() {
     if [[ "${do_not_notify}" == 'false' ]] ; then
-      wsl-notify-send.exe --appId kkae --category kkae --expire-time 1 test "${1}"
+      wsl-notify-send.exe --appId kkae --category kkae --expire-time 1 "${1}"
     fi
   }
 elif [[ $(uname) == 'Darwin' ]] ; then
