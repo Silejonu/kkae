@@ -15,7 +15,7 @@ Written in Bash, works on Linux (Wayland/X11), macOS, as well as on Windows via 
 
 ## Usage
 ```
-usage: kkae [-asmnpvbh] [-l LENGTH] [-c CASE] [-e LIST] [-r MIN-MAX]
+usage: kkae [-asmdpwbvh] [-l LENGTH] [-c CASE] [-e LIST]
 Generate a random password and save it into the clipboard.
   -l LENGTH   Character length of the password (default is 16).
   -c CASE     Only include lowercase or uppercase letters.
@@ -26,6 +26,7 @@ Generate a random password and save it into the clipboard.
   -m          Save the password into the middle-click clipboard.
   -n          Do not send a notification when the password has been saved.
   -p          Print the password instead of saving it into the clipboard.
+  -P          Same as -p, but without the trailing newline.
   -v          Show current settings and exit.
   -b          Enable debug mode.
   -h          Print these instructions and exit.
