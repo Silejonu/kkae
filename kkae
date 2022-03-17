@@ -12,7 +12,7 @@ fi
 
 usage() {
 cat << EOF
-usage: ${0} [-asmnpvbh] [-l LENGTH] [-c CASE] [-e LIST] [-r MIN-MAX]
+usage: ${0} [-asmnpPvbh] [-l LENGTH] [-c CASE] [-e LIST] [-r MIN-MAX]
 Generate a random password and save it into the clipboard.
   -l LENGTH   Character length of the password (default is ${password_length}).
   -c CASE     Only include lowercase or uppercase letters.
