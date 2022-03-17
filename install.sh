@@ -5,6 +5,19 @@ if [[ ${UID} -ne 0 ]] ; then
   exit 1
 fi
 
+# Determine the platform the script is running on
+if [[ $(uname -r | grep -i Microsoft) ]] ; then
+  os='windows'
+  if ! touch /mnt/c/Windows &> /dev/null ; then
+    printf "Error: WSL needs to be launched with admin privileges to be properly installed.\n" >&2
+    exit 1
+  fi
+elif [[ $(uname) == 'Darwin' ]] ; then
+  os='macos'
+else
+  os='linux'
+fi
+
 install_linux_application() {
 cp -f Linux/kkae.desktop /usr/share/applications/kkae
 }
@@ -55,6 +68,8 @@ latest_wsl_notify_send_release=$(curl --silent https://api.github.com/repos/stua
 wget "https://github.com/stuartleeks/wsl-notify-send/releases/download/${latest_wsl_notify_send_release}/wsl-notify-send_windows_amd64.zip"
 sudo apt install -y unzip
 unzip wsl-notify-send_windows_amd64.zip
+# When inside the Linux $PATH, wsl-notify-send.exe is very slow,
+# so installing it into the Windows $PATH instead
 cp -f wsl-notify-send.exe /mnt/c/Windows
 
 # Create the shortcut to appear in the Start menu
@@ -71,15 +86,6 @@ EOF
 "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" './CreatekkaeShortcut.vbs'
 rm ./CreatekkaeShortcut.vbs
 }
-
-# Determine the platform the script is running on
-if [[ $(uname -r | grep -i Microsoft) ]] ; then
-  os='windows'
-elif [[ $(uname) == 'Darwin' ]] ; then
-  os='macos'
-else
-  os='linux'
-fi
 
 # Make sure all dependencies are met
 if [[ ${os} == 'linux' ]] ; then
