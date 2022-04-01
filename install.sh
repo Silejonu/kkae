@@ -118,7 +118,7 @@ chmod 755 /usr/local/bin/kkae
 
 # Install the configuration file
 if [[ -f /etc/kkae.conf ]] ; then
-  read -pr 'The configuration file /etc/kkae.conf already exists. Do you want to overwrite it? [y/N] ' yn
+  read -rp 'The configuration file /etc/kkae.conf already exists. Do you want to overwrite it? [y/N] ' yn
   case ${yn} in
     [yY]|[yY][eE][sS] )
       cp -f kkae.conf /etc/
