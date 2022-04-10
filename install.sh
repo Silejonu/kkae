@@ -19,7 +19,7 @@ else
 fi
 
 install_linux_application() {
-cp -f Linux/kkae.desktop /usr/share/applications/kkae
+cp -f Linux/kkae.desktop /usr/share/applications/
 }
 
 install_macos_application() {
