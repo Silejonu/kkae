@@ -33,7 +33,9 @@ Generate a random password and save it into the clipboard.
   ```
 
 ## Configuration
-If the file `/etc/kkae.conf` exists, its content will become the default kkae settings when ran from the command-line or the application. See [the example file](https://github.com/Silejonu/kkae/blob/main/kkae.conf) for options.
+If the file `/etc/kkae.conf` exists, its content will become the default kkae settings when ran from the command-line or the application. If `~/.config/kkae.conf` exists, it will have the priority over `/etc/kkae.conf`. See [the example file](https://github.com/Silejonu/kkae/blob/main/kkae.conf) for options.
+
+Options explicitely passed in the terminal always have the priority over the config files.
 
 ## Installation instructions
 ```
@@ -50,5 +52,5 @@ Here are the things I wish to implement in the future:
 * [ ] Make an uninstallation script
 * [ ] Fix the app icon in macOS
 * [ ] Create a unique icon
-* [ ] Add support for `~/.config/kkae.conf`
+* [*] Add support for `~/.config/kkae.conf`
 * [ ] Maybe a Python rewrite?
