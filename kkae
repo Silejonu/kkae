@@ -46,6 +46,10 @@ debug='false'
 if [[ -f /etc/kkae.conf ]] ; then
   source /etc/kkae.conf
 fi
+# If ~/kkae.conf exists, overwrite the variables
+if [[ -f ~/kkae.conf ]] ; then
+  source ~/kkae.conf
+fi
 
 # Parse the command-line options
 while getopts l:c:ase:r:mnpPvbh option ; do
@@ -56,7 +60,7 @@ while getopts l:c:ase:r:mnpPvbh option ; do
        [[ "${password_length}" -gt "${maximum_password_length}" ]]
        then
          printf "Option -l requires a number between 0 and %s.\n" "${maximum_password_length}">&2
-         printf "Edit /etc/kkae.conf to change the maximum password length.\n" >&2
+         printf "Edit /etc/kkae.conf or ~/kkae.conf to change the maximum password length.\n" >&2
          exit 1
        fi ;;
     c) password_case="${OPTARG}"
@@ -189,7 +193,7 @@ until [[ "${password_diversity}" -eq "${password_diversity_target}" ]] ; do
     debug_message "${password_generation_attempts} passwords were generated, none passed the validity check."
     printf "Aborted: could not generate a valid password after %ss.\n" "${countdown}" >&2
     printf "Try again, or review your parameters.\n" >&2
-    printf "Alternatively, edit /etc/kkae.conf to increase the timeout.\n" >&2
+    printf "Alternatively, edit /etc/kkae.conf or ~/kkae.conf to increase the timeout.\n" >&2
     kkae_notification "Could not generate a valid password in time."
     exit 3
   }
