@@ -49,5 +49,6 @@ Here are the things I wish to implement in the future:
 
 * [ ] Make an uninstallation script
 * [ ] Fix the app icon in macOS
+* [ ] Create a unique icon
 * [ ] Add support for `~/.config/kkae.conf`
 * [ ] Maybe a Python rewrite?
