@@ -229,7 +229,7 @@ until [[ "${password_diversity}" -eq "${password_diversity_target}" ]] ; do
     (( password_diversity += 1 ))
   fi
   special_characters_in_password=$(printf "%s" "${password}" | tr -d 'a-zA-Z0-9')
-  if [[ "${#special_characters_in_password}" -gt min_special_characters ]] &&\
+  if [[ "${#special_characters_in_password}" -ge min_special_characters ]] &&\
   [[ "${#special_characters_in_password}" -le max_special_characters ]] ; then
     (( password_diversity += 1 ))
   fi
