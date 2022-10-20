@@ -43,7 +43,7 @@ cd $(mktemp -d) || exit
 wget https://github.com/Silejonu/kkae/archive/refs/heads/main.tar.gz
 tar xf main.tar.gz
 cd kkae-main
-bash ./install.sh
+sudo bash ./install.sh
 ```
 
 ## To-do
