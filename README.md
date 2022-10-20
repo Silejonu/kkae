@@ -38,7 +38,7 @@ If the file `/etc/kkae.conf` exists, its content will become the default kkae se
 Options explicitely passed in the terminal always have the priority over the config files.
 
 ## Installation instructions
-```
+```bash
 cd $(mktemp -d) || exit
 wget https://github.com/Silejonu/kkae/archive/refs/heads/main.tar.gz
 tar xf main.tar.gz
