@@ -42,7 +42,7 @@ Options explicitely passed in the terminal always have the priority over the con
 cd $(mktemp -d) || exit
 wget https://github.com/Silejonu/kkae/archive/refs/heads/main.tar.gz
 tar xf main.tar.gz
-cd kkae
+cd kkae-main
 bash ./install.sh
 ```
 
