@@ -39,11 +39,11 @@ Options explicitely passed in the terminal always have the priority over the con
 
 ## Installation instructions
 ```bash
-cd $(mktemp -d) || exit
+( cd $(mktemp -d)
 wget https://github.com/Silejonu/kkae/archive/refs/heads/main.tar.gz
 tar xf main.tar.gz
 cd kkae-main
-sudo bash ./install.sh
+sudo bash ./install.sh )
 ```
 
 ## To-do
