@@ -1,3 +1,13 @@
+# ⚠ This script had moved!
+
+**It is now available and actively maintained on [Codeberg](https://codeberg.org/Silejonu/kkae).  
+If you have saved the commands used to run the script, you need to update them.**
+
+This repo will continue to exist as an entry-point to the new repo for those who starred the project.  
+You can also still open a bug report from here.
+
+---
+
 # kkae
 *깨 [kkae]: Korean for "sesame"*
 
