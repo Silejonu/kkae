@@ -1,4 +1,4 @@
-# ⚠ This script had moved!
+# ⚠ This script has moved!
 
 **It is now available and actively maintained on [Codeberg](https://codeberg.org/Silejonu/kkae).  
 
