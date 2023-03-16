@@ -14,6 +14,15 @@ A powerful password generator that saves directly into the clipboard, with lots 
 
 Written in Bash, works on Linux (Wayland/X11), macOS, as well as on Windows via WSL (the passwords will be saved into the Windows clipboard).
 
+---
+
+1. [Features](#features)
+2. [Usage](#usage)
+3. [Configuration](#configuration)
+4. [Installation instructions](#installation-instructions)
+5. [Uninstallation instructions](#uninstallation-instructions)
+6. [To-do](#to-do)
+
 ## Features
 
 * Send passwords directly to the clipboard (or print them into the terminal)
@@ -42,24 +51,47 @@ Generate a random password and save it into the clipboard.
   ```
 
 ## Configuration
-If the file `/etc/kkae.conf` exists, its content will become the default kkae settings when ran from the command-line or the application. If `~/.config/kkae.conf` exists, it will have the priority over `/etc/kkae.conf`. See [the example file](https://github.com/Silejonu/kkae/blob/main/kkae.conf) for options.
+If the file `/etc/kkae.conf` exists, its content will become the default kkae settings when ran from the command-line or the application. If `~/.config/kkae.conf` exists, it will have the priority over `/etc/kkae.conf`. See [the example file](https://codeberg.org/Silejonu/kkae/src/branch/main/kkae.conf) for options.
 
 Options explicitely passed in the terminal always have the priority over the config files.
 
 ## Installation instructions
 ```bash
 ( cd $(mktemp -d)
-wget https://github.com/Silejonu/kkae/archive/refs/heads/main.tar.gz
+wget https://codeberg.org/Silejonu/kkae/archive/main.tar.gz
 tar xf main.tar.gz
-cd kkae-main
+cd kkae
 sudo bash ./install.sh )
 ```
+
+## Uninstallation instructions
+```bash
+# remove the main program
+sudo rm -f /usr/local/bin/kkae
+```
+```bash
+# remove configuration files
+sudo rm -f /etc/kkae.conf # system-wide
+rm -f ~/.config/kkae.conf # user-wide
+```
+```bash
+# for Linux only
+sudo rm -f /usr/share/applications/kkae.desktop
+```
+```bash
+# for macOS only
+sudo rm -rf /Applications/kkae.app
+```
+
+On Windows you will need to delete the following files as well:  
+- `%AppData%\Roaming\Microsoft\Windows\Start Menu\Programs\kkae.lnk`  
+- `%HOMEDRIVE%%HOMEPATH%\kkae`
 
 ## To-do
 
 Here are the things I wish to implement in the future:
 
-* [ ] Make an uninstallation script
+* [x] Write uninstallation instructions
 * [ ] Fix the app icon in macOS
 * [ ] Create a unique icon
 * [x] Add support for `~/.config/kkae.conf`
