@@ -1,6 +1,6 @@
 # ⚠ This script has moved!
 
-**It is now available and actively maintained on [Codeberg](https://codeberg.org/Silejonu/kkae).  
+**It is now available and actively maintained on [Codeberg](https://codeberg.org/Silejonu/kkae).**
 
 This repo will continue to exist as an entry-point to the new repo for those who starred the project.  
 You can also still open a bug report from here.
@@ -35,7 +35,7 @@ Written in Bash, works on Linux (Wayland/X11), macOS, as well as on Windows via 
 ```
 usage: kkae [-asmnpPvbh] [-l LENGTH] [-c CASE] [-e LIST] [-r MIN-MAX]
 Generate a random password and save it into the clipboard.
-  -l LENGTH   Character length of the password (default is 16).
+  -l LENGTH   Character length of the password (default is 20).
   -c CASE     Only include lowercase or uppercase letters.
   -a          Only include alphanumerical characters.
   -s          Include normally ignored similar characters (0oO1lI"').
